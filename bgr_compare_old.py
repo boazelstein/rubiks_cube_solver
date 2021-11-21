@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from time import sleep
 import cube_solver
-import pandas as pd
 
 colors = {}
 lower = {}
@@ -61,24 +60,45 @@ faces = {
 }
 
 
+# def detect_color(img):
+#     return_value = '_'
+#     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+#     for key, value in upper.items():
+#         # print("in detect color", lower[key], upper[key])
+#         # define kernel size
+#         kernel = np.ones((7, 7), np.uint8)
+#         # find the colors within the boundaries
+#         mask = cv2.inRange(hsv, lower[key], upper[key])
+#         # Remove unnecessary noise from mask
+#         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+#         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+#         # Find contours from the mask
+#         contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+#         # img = cv2.drawContours(img, contours, -1, (200, 200, 255), 0)
+#         if len(contours) > 0:
+#             print(len(contours), "->", color_enum[key])
+#             return_value = color_enum[key]
+#             # break
+#     return return_value
 def detect_color(img):
     return_value = '_'
-    bgr = np.average(img[15:75, 15:75], axis=0)
+    # bgr = img[45,45]
+    bgr = np.average(img, axis=0)
     bgr = np.average(bgr, axis=0)
     bgr = np.uint8(bgr)
-    # print("one pixel", img[45, 46])
-    # print("mean", bgr)
+    print("one pixel", img[45, 46])
+    print("mean", bgr)
     all_min = 1000
     for key, value in colors.items():
         my_min_1 = abs(int(bgr[0]) - int(colors[key][0]))
         my_min_2 = abs(int(bgr[1]) - int(colors[key][1]))
         my_min_3 = abs(int(bgr[2]) - int(colors[key][2]))
         my_min = my_min_1 + my_min_2 + my_min_3
-        # print(color_enum[key], my_min)
+        print(color_enum[key], colors[key], "my_min", my_min)
         if my_min < all_min:
             all_min = my_min
             return_value = color_enum[key]
-    # print("all_min", all_min, "return_value", return_value)
+    print("all_min", all_min, "return_value", return_value)
     return return_value
 
 
@@ -173,8 +193,6 @@ def calib_instructions(frame, color_count):
 
 
 def snapshots(frame, key, face_count, cube_color_string):
-    if key == ord('a'):
-        face_count -= 1
     if key == ord('t'):
         face_count += 1
         # cv2.imshow('TOP', frame)
@@ -215,17 +233,6 @@ def snapshots(frame, key, face_count, cube_color_string):
     return face_count
 
 
-def show_solution(solution):
-    sol_image = cv2.imread("solution_explenation.png")
-    cv2.putText(sol_image,
-                f'Solution is: {solution}',
-                (160, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (6, 5, 250), 2)
-    cv2.imshow("solution", sol_image)
-    key = cv2.waitKey()
-    if key == 27:  # exit on ESC
-        exit()
-
-
 if __name__ == "__main__":
     cube_color_string = ''
     cap = cv2.VideoCapture(0)
@@ -235,8 +242,7 @@ if __name__ == "__main__":
     sleep(0.5)
     face_count = 0
     color_count = 0
-    record_counter = 0
-    calibrated, record = False, False
+    calibrated = False
     while True:
         ret, frame = cap.read()
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
@@ -249,14 +255,17 @@ if __name__ == "__main__":
                 break
             # take a snapshot and save colors...
             if key == ord('e'):
-                # bgr_1 = frame[155, 156]
-                temp = np.average(frame[145:175, 145:175], axis=0)
-                temp = np.average(temp, axis=0)
-                bgr = np.uint8(temp)
-                # print("one pixel", bgr_1)
+                # get BGR lower and upper values
+                bgr_1 = frame[155, 156]
+                bgr = np.average(frame[145:165, 145:165], axis=0)
+                bgr = np.average(bgr, axis=0)
+                bgr = np.uint8(bgr)
+                print("one pixel", bgr_1)
+                print("mean", bgr)
+                # lower[color_count] = (bgr[0]-15, bgr[1]-15, bgr[2]-15)
                 colors[color_count] = (bgr[0], bgr[1], bgr[2])
-                # colors[color_count] = (bgr[0], bgr[1], bgr[2])
-                print(color_count, colors[color_count])
+                # print(color_count, colors[color_count])
+
                 color_count += 1
             if color_count == 6:
                 calibrated = True
@@ -269,9 +278,6 @@ if __name__ == "__main__":
             cv2.putText(frame,
                         f'Cube sides recorded={face_count}',
                         (360, 340), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (60, 150, 250), 1)
-            cv2.putText(frame,
-                        "To go back and correct the color press 'A'",
-                        (60, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (6, 50, 250), 1)
 
             key = cv2.waitKey(20)
 
@@ -290,8 +296,6 @@ if __name__ == "__main__":
                 solution = cube_solver.solve_cube(final_color_string)
                 print("solution is ", solution)
                 # instruct user how to solve the cube
-                show_solution(solution)
-                break
 
             if key == 27:  # exit on ESC
                 break
