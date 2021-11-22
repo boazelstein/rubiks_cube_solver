@@ -1,48 +1,11 @@
 import cv2
 import numpy as np
 from time import sleep
-import cube_solver
-import pandas as pd
+# import cube_solver
+from rubik_solver import utils
+
 
 colors = {}
-lower = {}
-upper = {}
-# lower = {
-#     'red': (166, 84, 141),
-#     'green': (66, 122, 129),
-#     'blue': (97, 100, 117),
-#     'yellow': (23, 59, 119),
-#     'orange': (0, 50, 80),
-#     'white': (150, 150, 168)}
-# upper = {
-#     'red': (186, 255, 255),
-#     'green': (86, 255, 255),
-#     'blue': (117, 255, 255),
-#     'yellow': (54, 255, 255),
-#     'orange': (20, 255, 255),
-#     'white': (200, 255, 255)}
-# colors = {
-#     'red': (0, 0, 255),
-#     'green': (0, 255, 0),
-#     'blue': (255, 0, 0),
-#     'yellow': (0, 255, 217),
-#     'orange': (0, 140, 255),
-#     'white': (255, 255, 255)}
-# colors = {
-#     0: (0, 0, 255),  # red
-#     1: (0, 255, 0),  # green
-#     2: (255, 0, 0),  # blue
-#     3: (0, 255, 217),  # yellow
-#     4: (0, 140, 255),  # orange
-#     5: (255, 255, 255)}  # white
-# color_enum = {
-#     'red': 'r',
-#     'green': 'g',
-#     'blue': 'b',
-#     'yellow': 'y',
-#     'orange': 'o',
-#     'white': 'w',
-# }
 color_enum = {
     0: 'r',
     1: 'g',
@@ -216,7 +179,7 @@ def snapshots(frame, key, face_count, cube_color_string):
 
 
 def show_solution(solution):
-    sol_image = cv2.imread("solution_explenation.png")
+    sol_image = cv2.imread("images/solution_explanation.png")
     cv2.putText(sol_image,
                 f'Solution is: {solution}',
                 (160, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (6, 5, 250), 2)
@@ -227,21 +190,22 @@ def show_solution(solution):
 
 
 if __name__ == "__main__":
+    # init parameters
+    face_count, color_count, record_counter = 0, 0, 0
+    calibrated, record = False, False
     cube_color_string = ''
+    # start webcam
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
-    # start webcam
     sleep(0.5)
-    face_count = 0
-    color_count = 0
-    record_counter = 0
-    calibrated, record = False, False
     while True:
+        # get frame and start analysis
         ret, frame = cap.read()
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-
+        # first need to calibrate colors
         if not calibrated:
+            # instruct user which color to calibrate
             calib_instructions(frame, color_count)
             cv2.imshow('image', frame)
             key = cv2.waitKey(20)
@@ -281,17 +245,19 @@ if __name__ == "__main__":
             face_count = snapshots(frame, key, face_count, cube_color_string)
 
             if face_count == 6:
+                # got all 6 faces, now fetch solution
                 final_color_string = faces['top'] + faces['left'] \
                                      + faces['front'] + faces['right'] \
                                      + faces['back'] + faces['bottom']
                 print("going to solve this cube string: ",
                       len(final_color_string), final_color_string)
-                # only now send to solver
-                solution = cube_solver.solve_cube(final_color_string)
+                # send cube string to solver and receive the solution
+                solution = utils.solve(final_color_string)
                 print("solution is ", solution)
-                # instruct user how to solve the cube
+                # show user the solution on the instructions image
                 show_solution(solution)
-                break
+                cv2.destroyAllWindows()
+                exit()
 
             if key == 27:  # exit on ESC
                 break

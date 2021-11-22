@@ -3,7 +3,7 @@ import cv2
 
 
 def show_solution(solution):
-    sol_image = cv2.imread("solution_explenation.png")
+    sol_image = cv2.imread("images/solution_explanation.png")
     cv2.putText(sol_image,
                 f'Solution is: {solution}',
                 (160, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (6, 5, 250), 2)
@@ -20,6 +20,6 @@ def solve_cube(cube_color_string):
 
 if __name__ == "__main__":
     # cube_colors = 'yyggybyybgrbgborogroybrrogooyobgybrryrrgoogbbwwwwwwwww'
-    cube_colors = 'ryrryrryrbbbbbbbbbwrwwrwwrwgggggggggyoyyoyyoyowoowoowo'
+    cube_colors = 'yyyyyyrrrrrwbbbbbbgggrrwrrwyooggggggbbbyooyoowwowwowwo'
     print(solve_cube(cube_colors))
     show_solution(solve_cube(cube_colors))
