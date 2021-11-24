@@ -1,10 +1,10 @@
-# Rubiks Cube Solver
+# Rubik's Cube Solver
 
 ### Use Open-CV and Python to solve a rubik's cube
 
 ---
 
-### Project architecture and explanations
+### Project Architecture and Explanations
 1. <ins>Detect 9 cubes for each face:</ins>  
 The original plan was to detect the contours from the live webcam video, extract the 9 cube and identify each color.
 Unfortunately I was unable to find the contours and therefore had to find a different solution.
@@ -31,7 +31,7 @@ from here: https://ruwix.com/the-rubiks-cube/algorithm/#:~:text=A%20Rubik's%20Cu
 
 ---
 
-### Program flow
+### Program Flow
 1. <ins>Calibration:</ins>  
 Place each color in the designated box and press 'E' (as instructed on the screen)  
 Important comments:
