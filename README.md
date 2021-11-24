@@ -1,4 +1,4 @@
-# Rubiks Cube Solver
+# Rubik's Cube Solver
 
 ### Use Open-CV and Python to solve a rubik's cube
 
